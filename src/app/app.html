@@ -1,0 +1,411 @@
+<div class="app-container">
+  <!-- Top Glass Header -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 11 12 14 22 4"></polyline>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">TaskFlow <span class="brand-accent">PRO</span></h1>
+          <p class="brand-subtitle">Smart Angular Workspace</p>
+        </div>
+      </div>
+
+      <!-- Search Input -->
+      <div class="search-box">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input 
+          type="text" 
+          placeholder="Search tasks, notes, subtasks..." 
+          [ngModel]="todoService.searchQuery()" 
+          (ngModelChange)="todoService.searchQuery.set($event)"
+        />
+        <button 
+          *ngIf="todoService.searchQuery()" 
+          class="btn-icon-xs" 
+          (click)="todoService.searchQuery.set('')"
+          title="Clear search">
+          ✕
+        </button>
+      </div>
+
+      <!-- Header Tools -->
+      <div class="header-actions">
+        <button class="btn-theme-toggle" (click)="todoService.toggleTheme()" [title]="todoService.isDarkMode() ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+          <span *ngIf="todoService.isDarkMode()">☀️ Light</span>
+          <span *ngIf="!todoService.isDarkMode()">🌙 Dark</span>
+        </button>
+        
+        <button class="btn-icon" (click)="exportData()" title="Export Backup (JSON)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        </button>
+
+        <label class="btn-icon" title="Import Tasks (JSON)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          <input type="file" accept=".json" (change)="importData($event)" style="display: none;" />
+        </label>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- Productivity Banner & Stats Dashboard -->
+    <section class="dashboard-banner">
+      <div class="quote-card">
+        <div class="quote-text">{{ motivationalQuote }}</div>
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" [style.width.%]="todoService.stats().percentage"></div>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value">{{ todoService.stats().total }}</div>
+          <div class="stat-label">Total Tasks</div>
+        </div>
+        <div class="stat-card stat-success">
+          <div class="stat-value">{{ todoService.stats().completed }} <span class="stat-percent">({{ todoService.stats().percentage }}%)</span></div>
+          <div class="stat-label">Completed</div>
+        </div>
+        <div class="stat-card stat-urgent">
+          <div class="stat-value">{{ todoService.stats().highPriority }}</div>
+          <div class="stat-label">High Priority</div>
+        </div>
+        <div class="stat-card stat-starred">
+          <div class="stat-value">{{ todoService.stats().starred }}</div>
+          <div class="stat-label">Starred</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick Task Add Input Bar -->
+    <section class="quick-add-section">
+      <div class="quick-add-box">
+        <input 
+          type="text" 
+          class="quick-input" 
+          placeholder="Add a new task... (Press Enter to save)" 
+          [(ngModel)]="quickTitle" 
+          (keyup.enter)="onQuickAdd()"
+        />
+        <div class="quick-actions">
+          <button class="btn-secondary-sm" (click)="openAddModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            More Options
+          </button>
+          <button class="btn-primary-sm" (click)="onQuickAdd()">
+            Add Task
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Controls: Tabs, Category Chips, Sort Dropdown -->
+    <section class="controls-section">
+      <!-- Status Tabs -->
+      <div class="status-tabs">
+        <button 
+          class="tab-btn" 
+          [class.active]="todoService.statusFilter() === 'all'" 
+          (click)="todoService.statusFilter.set('all')">
+          All <span class="badge-count">{{ todoService.stats().total }}</span>
+        </button>
+        <button 
+          class="tab-btn" 
+          [class.active]="todoService.statusFilter() === 'active'" 
+          (click)="todoService.statusFilter.set('active')">
+          Active <span class="badge-count">{{ todoService.stats().active }}</span>
+        </button>
+        <button 
+          class="tab-btn" 
+          [class.active]="todoService.statusFilter() === 'completed'" 
+          (click)="todoService.statusFilter.set('completed')">
+          Completed <span class="badge-count">{{ todoService.stats().completed }}</span>
+        </button>
+        <button 
+          class="tab-btn" 
+          [class.active]="todoService.statusFilter() === 'starred'" 
+          (click)="todoService.statusFilter.set('starred')">
+          ⭐ Starred <span class="badge-count">{{ todoService.stats().starred }}</span>
+        </button>
+      </div>
+
+      <!-- Categories & Sort -->
+      <div class="filter-sort-row">
+        <div class="category-pills">
+          <button 
+            *ngFor="let cat of categories" 
+            class="chip-btn" 
+            [class.active]="todoService.categoryFilter() === cat" 
+            (click)="todoService.categoryFilter.set(cat)">
+            {{ cat }}
+            <span class="chip-count" *ngIf="todoService.categoryCounts()[cat] !== undefined">
+              ({{ todoService.categoryCounts()[cat] }})
+            </span>
+          </button>
+        </div>
+
+        <div class="sort-selector">
+          <label>Sort by:</label>
+          <select [ngModel]="todoService.sortBy()" (ngModelChange)="todoService.sortBy.set($event)">
+            <option value="priority">🔥 Priority</option>
+            <option value="dueDate">📅 Due Date</option>
+            <option value="createdAt">🕒 Creation Date</option>
+            <option value="title">🔤 Title</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Task List -->
+    <section class="task-list-section">
+      <div *ngIf="todoService.filteredTodos().length === 0" class="empty-state">
+        <div class="empty-icon">📌</div>
+        <h3>No tasks found</h3>
+        <p>Try resetting filters or adding a new task to get started.</p>
+        <button class="btn-secondary-sm" (click)="todoService.resetToDefaults()" style="margin-top: 12px;">
+          Restore Sample Tasks
+        </button>
+      </div>
+
+      <div class="task-grid">
+        <div 
+          *ngFor="let todo of todoService.filteredTodos()" 
+          class="task-card" 
+          [class.completed-card]="todo.completed"
+          [class.starred-card]="todo.starred">
+          
+          <div class="task-card-left">
+            <!-- Custom Checkbox -->
+            <label class="custom-checkbox">
+              <input 
+                type="checkbox" 
+                [checked]="todo.completed" 
+                (change)="todoService.toggleTodo(todo.id)" 
+              />
+              <span class="checkbox-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </span>
+            </label>
+
+            <!-- Star Favorite -->
+            <button 
+              class="star-btn" 
+              [class.starred]="todo.starred" 
+              (click)="todoService.toggleStar(todo.id)" 
+              title="Toggle Favorite">
+              ★
+            </button>
+          </div>
+
+          <!-- Main Content -->
+          <div class="task-card-body" (click)="openDetail(todo)">
+            <div class="task-header-line">
+              <h4 class="task-title" [class.line-through]="todo.completed">{{ todo.title }}</h4>
+            </div>
+
+            <p *ngIf="todo.description" class="task-desc">{{ todo.description }}</p>
+
+            <div class="task-meta-bar">
+              <!-- Category Badge -->
+              <span class="badge-tag" [ngClass]="getCategoryBadgeClass(todo.category)">
+                {{ todo.category }}
+              </span>
+
+              <!-- Priority Badge -->
+              <span class="badge-tag" [ngClass]="getPriorityBadgeClass(todo.priority)">
+                {{ todo.priority | uppercase }}
+              </span>
+
+              <!-- Due Date Badge -->
+              <span *ngIf="todo.dueDate" class="badge-tag date-badge">
+                📅 {{ todo.dueDate }}
+              </span>
+
+              <!-- Subtasks Progress -->
+              <span *ngIf="todo.subtasks.length > 0" class="badge-tag subtask-badge">
+                ☑️ {{ todo.subtasks.filter(st => st.completed).length }}/{{ todo.subtasks.length }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="task-card-actions">
+            <button class="btn-card-action" (click)="openDetail(todo)" title="View & Edit Details">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            </button>
+
+            <button class="btn-card-action btn-delete" (click)="todoService.deleteTodo(todo.id)" title="Delete Task">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Clear Completed Footer Action -->
+  <footer class="app-footer" *ngIf="todoService.stats().completed > 0">
+    <button class="btn-clear-completed" (click)="todoService.clearCompleted()">
+      🗑️ Clear Completed Tasks ({{ todoService.stats().completed }})
+    </button>
+  </footer>
+
+  <!-- Advanced Add Modal -->
+  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Create New Task</h3>
+        <button class="btn-close" (click)="closeModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Task Title *</label>
+          <input type="text" [(ngModel)]="modalTitle" placeholder="e.g. Design app homepage wireframes" />
+        </div>
+
+        <div class="form-group">
+          <label>Description / Notes</label>
+          <textarea rows="3" [(ngModel)]="modalDescription" placeholder="Add helpful context or guidelines..."></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Category</label>
+            <select [(ngModel)]="modalCategory">
+              <option value="Work">Work</option>
+              <option value="Personal">Personal</option>
+              <option value="Fitness">Fitness</option>
+              <option value="Study">Study</option>
+              <option value="Ideas">Ideas</option>
+              <option value="General">General</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Priority</label>
+            <select [(ngModel)]="modalPriority">
+              <option value="urgent">🔴 Urgent</option>
+              <option value="high">🟠 High</option>
+              <option value="medium">🟡 Medium</option>
+              <option value="low">🟢 Low</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Due Date</label>
+            <input type="date" [(ngModel)]="modalDueDate" />
+          </div>
+        </div>
+
+        <!-- Subtasks Creator -->
+        <div class="form-group">
+          <label>Subtasks Checklist</label>
+          <div class="subtask-add-row">
+            <input 
+              type="text" 
+              [(ngModel)]="modalSubtaskInput" 
+              placeholder="Add step (e.g. Gather assets)" 
+              (keyup.enter)="addModalSubtask()" 
+            />
+            <button class="btn-secondary-sm" (click)="addModalSubtask()">Add Step</button>
+          </div>
+
+          <ul class="modal-subtask-list" *ngIf="modalSubtasks.length > 0">
+            <li *ngFor="let st of modalSubtasks; let i = index">
+              <span>• {{ st }}</span>
+              <button (click)="removeModalSubtask(i)">✕</button>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary-sm" (click)="closeModal()">Cancel</button>
+        <button class="btn-primary-sm" (click)="submitModal()">Create Task</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail & Subtask Drawer Modal -->
+  <div class="modal-overlay" *ngIf="activeTodoDetail" (click)="closeDetail()">
+    <div class="modal-card detail-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="detail-header-tags">
+          <span class="badge-tag" [ngClass]="getCategoryBadgeClass(activeTodoDetail.category)">
+            {{ activeTodoDetail.category }}
+          </span>
+          <span class="badge-tag" [ngClass]="getPriorityBadgeClass(activeTodoDetail.priority)">
+            {{ activeTodoDetail.priority | uppercase }}
+          </span>
+        </div>
+        <button class="btn-close" (click)="closeDetail()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <h2 class="detail-title" [class.line-through]="activeTodoDetail.completed">
+          {{ activeTodoDetail.title }}
+        </h2>
+
+        <p *ngIf="activeTodoDetail.description" class="detail-desc">
+          {{ activeTodoDetail.description }}
+        </p>
+
+        <div class="detail-meta-group">
+          <div *ngIf="activeTodoDetail.dueDate">📅 <strong>Due Date:</strong> {{ activeTodoDetail.dueDate }}</div>
+          <div>🕒 <strong>Created:</strong> {{ activeTodoDetail.createdAt | date:'medium' }}</div>
+        </div>
+
+        <hr class="divider" />
+
+        <!-- Subtask Checklist Section -->
+        <div class="subtasks-section">
+          <h3>Checklist Subtasks ({{ activeTodoDetail.subtasks.length }})</h3>
+
+          <div class="subtask-add-row" style="margin-bottom: 16px;">
+            <input 
+              type="text" 
+              [(ngModel)]="newDetailSubtask" 
+              placeholder="Add new subtask step..." 
+              (keyup.enter)="addDetailSubtask(activeTodoDetail.id)" 
+            />
+            <button class="btn-primary-sm" (click)="addDetailSubtask(activeTodoDetail.id)">Add</button>
+          </div>
+
+          <div class="subtask-items-list">
+            <div *ngFor="let st of activeTodoDetail.subtasks" class="subtask-item">
+              <label class="custom-checkbox">
+                <input 
+                  type="checkbox" 
+                  [checked]="st.completed" 
+                  (change)="todoService.toggleSubtask(activeTodoDetail.id, st.id)" 
+                />
+                <span class="checkbox-box">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </span>
+              </label>
+              <span class="subtask-title" [class.line-through]="st.completed">{{ st.title }}</span>
+              <button class="btn-icon-xs" (click)="todoService.deleteSubtask(activeTodoDetail.id, st.id)" title="Remove step">✕</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary-sm" (click)="closeDetail()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
