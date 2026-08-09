@@ -22,6 +22,7 @@ import { CommonModule } from '@angular/common';
           <a href="#estimator" (click)="closeMobileMenu()" class="nav-item">Estimator</a>
           <a href="#testimonials" (click)="closeMobileMenu()" class="nav-item">Testimonials</a>
           <a href="#about" (click)="closeMobileMenu()" class="nav-item">About Us</a>
+          <a href="#faq" (click)="closeMobileMenu()" class="nav-item">FAQ</a>
           <a href="#contact" (click)="closeMobileMenu()" class="nav-item">Contact</a>
         </nav>
 

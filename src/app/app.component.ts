@@ -7,6 +7,7 @@ import { PortfolioComponent } from './components/portfolio/portfolio.component';
 import { FeaturesComponent } from './components/features/features.component';
 import { TestimonialsComponent } from './components/testimonials/testimonials.component';
 import { AboutComponent } from './components/about/about.component';
+import { FaqComponent } from './components/faq/faq.component';
 import { ContactComponent } from './components/contact/contact.component';
 import { FooterComponent } from './components/footer/footer.component';
 
@@ -22,6 +23,7 @@ import { FooterComponent } from './components/footer/footer.component';
     FeaturesComponent,
     TestimonialsComponent,
     AboutComponent,
+    FaqComponent,
     ContactComponent,
     FooterComponent
   ],
