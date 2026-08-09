@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TodoService } from './services/todo.service';
 import { TodoItem, PriorityLevel, CategoryType, FilterStatus, SortOption } from './models/todo.model';
+import { FaqComponent } from './components/faq/faq.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FaqComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -126,7 +127,7 @@ export class App {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `TaskFlow-Backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `Nitish-Backup-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
   }
