@@ -127,7 +127,7 @@ export class App {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `N3-Backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `N4-Backup-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
   }
